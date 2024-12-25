@@ -16,7 +16,10 @@ build_image:
   variables:
     DOCKER_TLS_CERTDIR: '/certs'
   before_script:
-    - echo "$REGISTRY_PASS" | docker login -u "$REGISTRY_USER" --password-stdin
+    - echo "Branch: ${CI_COMMIT_BRANCH}" # Confirm branch
+    - echo "DOCKER_USER: ${DOCKER_USER}" # Check variable
+    - echo "DOCKER_PASS is set: ${DOCKER_PASS:+yes}" # Check if password exists
+    - echo "$DOCKER_PASS" | docker --debug login -u "$DOCKER_USER" --password-stdin # Debug login
   script:
     - docker build ./build -t $IMAGE_NAME:$IMAGE_TAG
     - docker push $IMAGE_NAME:$IMAGE_TAG

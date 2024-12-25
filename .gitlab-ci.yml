@@ -2,7 +2,12 @@ variables:
   IMAGE_NAME: korngsamnang/python-demo
   IMAGE_TAG: python-app-1.0
 
+stages:
+  - test
+  - build
+
 run_tests:
+  stage: test
   image: python:3.9-slim-buster
   before_script:
     - apt-get update && apt-get install -y make
@@ -10,6 +15,7 @@ run_tests:
     - make test
 
 build_image:
+  stage: build
   image: docker:20.10.16
   services:
     - docker:20.10.16-dind

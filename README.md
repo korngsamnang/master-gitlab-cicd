@@ -1,111 +1,176 @@
-# Python Flask - Demo Web Application
+# GitLab CI/CD with a Python App
 
-This is a simple Python Flask web application. The app provides system information and a realtime monitoring screen with dials showing CPU, memory, IO and process information.
+## Introduction and Overview
 
-The app has been designed with cloud native demos & containers in mind, in order to provide a real working application for deployment, something more than "hello-world" but with the minimum of pre-reqs. It is not intended as a complete example of a fully functioning architecture or complex software design.
+Welcome to this repository! The goal here is to learn the basics of GitLab CI/CD while working with a Python Flask application. You will learn how to:
 
-Typical uses would be deployment to Kubernetes, demos of Docker, CI/CD (build pipelines are provided), deployment to cloud (Azure) monitoring, auto-scaling
+- Run tests
+- Build a Docker image
+- Push the image to a private repository
+- Deploy the application to a server
 
-## Screenshot
+This guide explains each step in detail, so let's get started.
 
-![screen](https://user-images.githubusercontent.com/14982936/30533171-db17fccc-9c4f-11e7-8862-eb8c148fedea.png)
+## What is GitLab CI/CD?
 
-# Status
+GitLab CI/CD is an integrated part of GitLab, a DevOps platform that provides a continuous integration (CI) and continuous delivery (CD) pipeline. It allows developers to:
 
-![](https://img.shields.io/github/last-commit/benc-uk/python-demoapp) ![](https://img.shields.io/github/release-date/benc-uk/python-demoapp) ![](https://img.shields.io/github/v/release/benc-uk/python-demoapp) ![](https://img.shields.io/github/commit-activity/y/benc-uk/python-demoapp)
+- Automate testing of code changes.
+- Build and deploy applications quickly and efficiently.
+- Monitor deployments for any issues.
 
-Live instances:
+## What is CI/CD in Simple Words?
 
-[![](https://img.shields.io/website?label=Hosted%3A%20Azure%20App%20Service&up_message=online&url=https%3A%2F%2Fpython-demoapp.azurewebsites.net%2F)](https://python-demoapp.azurewebsites.net/)  
-[![](https://img.shields.io/website?label=Hosted%3A%20Kubernetes&up_message=online&url=https%3A%2F%2Fpython-demoapp.kube.benco.io%2F)](https://python-demoapp.kube.benco.io/)
+CI/CD stands for Continuous Integration and Continuous Delivery/Deployment. It is a practice of automatically building, testing, and deploying applications whenever changes are made to the code. This ensures faster delivery and better quality in software development.
 
-## Building & Running Locally
+In simple words:
 
-### Pre-reqs
+- CI: Continuously integrate code changes into a shared repository.
+- CD: Continuously release these changes to the end environment.
 
-- Be using Linux, WSL or MacOS, with bash, make etc
-- [Python 3.8+](https://www.python.org/downloads/) - for running locally, linting, running tests etc
-- [Docker](https://docs.docker.com/get-docker/) - for running as a container, or image build and push
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux) - for deployment to Azure
+## GitLab in Comparison to Other CI/CD Platforms
 
-Clone the project to any directory where you do development work
+While Jenkins is still one of the most widely used CI/CD platforms in the industry, GitLab CI/CD is gaining popularity due to its simplicity, integration, and out-of-the-box features. GitLab CI/CD does not require setting up separate servers for pipelines, making it an excellent choice for teams looking for a streamlined setup.
 
-```
-git clone https://github.com/benc-uk/python-demoapp.git
-```
+## GitLab Architecture - How GitLab Works
 
-### Makefile
+With GitLab CI/CD, you don't need to set up or configure servers manually. Instead, GitLab uses Runners to execute pipeline jobs. A runner is an application that processes builds and sends the results back to GitLab. These runners can be shared or specific to your project.
 
-A standard GNU Make file is provided to help with running and building locally.
+## Overview of the Demo App (Run Locally)
 
-```text
-help                 💬 This help message
-lint                 🔎 Lint & format, will not fix but sets exit code on error
-lint-fix             📜 Lint & format, will try to fix errors and modify code
-image                🔨 Build container image from Dockerfile
-push                 📤 Push container image to registry
-run                  🏃 Run the server locally using Python & Flask
-deploy               🚀 Deploy to Azure Web App
-undeploy             💀 Remove from Azure
-test                 🎯 Unit tests for Flask app
-test-report          🎯 Unit tests for Flask app (with report output)
-test-api             🚦 Run integration API tests, server must be running
-clean                🧹 Clean up project
-```
+This repository contains a Python Flask application. To run the application locally:
 
-Make file variables and default values, pass these in when calling `make`, e.g. `make image IMAGE_REPO=blah/foo`
+1. Install the dependencies listed in `requirements.txt`.
 
-| Makefile Variable | Default                |
-| ----------------- | ---------------------- |
-| IMAGE_REG         | ghcr<span>.</span>io   |
-| IMAGE_REPO        | benc-uk/python-demoapp |
-| IMAGE_TAG         | latest                 |
-| AZURE_RES_GROUP   | temp-demoapps          |
-| AZURE_REGION      | uksouth                |
-| AZURE_SITE_NAME   | pythonapp-{git-sha}    |
+2. Use the Makefile to execute commands like:
 
-The app runs under Flask and listens on port 5000 by default, this can be changed with the `PORT` environmental variable.
+   - `make test`: Runs the test suite.
+   - `make run`: Starts the application.
 
-# Containers
+## Pipeline Configuration File (.gitlab-ci.yml)
 
-Public container image is [available on GitHub Container Registry](https://github.com/users/benc-uk/packages/container/package/python-demoapp)
+### What is .gitlab-ci.yml?
 
-Run in a container with:
+GitLab CI/CD pipelines are defined using a `.gitlab-ci.yml` file. This file contains all the instructions for running CI/CD jobs, and it must be placed in the root directory of your project.
 
-```bash
-docker run --rm -it -p 5000:5000 ghcr.io/benc-uk/python-demoapp:latest
-```
+### Structure of `.gitlab-ci.yml`
 
-Should you want to build your own container, use `make image` and the above variables to customise the name & tag.
+The pipeline in this repository has three stages:
 
-## Kubernetes
+1. Test
+2. Build
+3. Deploy
 
-The app can easily be deployed to Kubernetes using Helm, see [deploy/kubernetes/readme.md](deploy/kubernetes/readme.md) for details
+Each stage consists of jobs, and these jobs are executed according to the order defined in the pipeline.
 
-# GitHub Actions CI/CD
+## Run Tests
 
-A working set of CI and CD release GitHub Actions workflows are provided `.github/workflows/`, automated builds are run in GitHub hosted runners
+The first job in the pipeline is to run tests. Here's how it's defined:
 
-### [GitHub Actions](https://github.com/benc-uk/python-demoapp/actions)
-
-[![](https://img.shields.io/github/workflow/status/benc-uk/python-demoapp/CI%20Build%20App)](https://github.com/benc-uk/python-demoapp/actions?query=workflow%3A%22CI+Build+App%22)
-
-[![](https://img.shields.io/github/workflow/status/benc-uk/python-demoapp/CD%20Release%20-%20AKS?label=release-kubernetes)](https://github.com/benc-uk/python-demoapp/actions?query=workflow%3A%22CD+Release+-+AKS%22)
-
-[![](https://img.shields.io/github/workflow/status/benc-uk/python-demoapp/CD%20Release%20-%20Webapp?label=release-azure)](https://github.com/benc-uk/python-demoapp/actions?query=workflow%3A%22CD+Release+-+Webapp%22)
-
-[![](https://img.shields.io/github/last-commit/benc-uk/python-demoapp)](https://github.com/benc-uk/python-demoapp/commits/master)
-
-## Running in Azure App Service (Linux)
-
-If you want to deploy to an Azure Web App as a container (aka Linux Web App), a Bicep template is provided in the [deploy](deploy/) directory
-
-For a super quick deployment, use `make deploy` which will deploy to a resource group, temp-demoapps and use the git ref to create a unique site name
-
-```bash
-make deploy
+```yaml
+run_tests:
+  stage: test
+  image: python:3.9-slim-buster
+  before_script:
+    - apt-get update && apt-get install -y make
+  script:
+    - make test
 ```
 
-## Running in Azure App Service (Windows)
+This job:
 
-Just don't, it's awful
+- Uses the Python 3.9 slim image.
+- Installs make to run the tests.
+- Executes the make test command to validate the application.
+
+## Build and Push Docker Image
+
+The second stage builds the Docker image and pushes it to a private repository.
+
+**Job Configuration:**
+
+```yaml
+build_image:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  variables:
+    DOCKER_TLS_CERTDIR: '/certs'
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin
+  script:
+    - docker build -f build/Dockerfile . -t $IMAGE_NAME:$IMAGE_TAG
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+```
+
+**Key Points:**
+
+1. **Docker-in-Docker**: This setup allows running Docker commands inside a Docker container.
+
+2. **Variables for Login Credentials**: Credentials are stored in GitLab CI/CD variables (CI_REGISTRY_USER and CI_REGISTRY_PASSWORD).
+
+3. **Docker Build and Push**:
+
+   - Builds the Docker image using the Dockerfile.
+   - Pushes the image to a private Docker repository.
+
+## Define Stages
+
+GitLab CI/CD stages ensure that jobs are executed in a specific order. In this pipeline:
+
+- The test stage runs first.
+- The build stage runs after successful tests.
+- The deploy stage runs last.
+
+**Configuration Example:**
+
+```yaml
+stages:
+  - test
+  - build
+  - deploy
+```
+
+## Prepare Deployment Server
+
+The deployment process involves deploying the Docker container to an Ubuntu server.
+
+**Connect GitLab to the Server**
+To connect to the server, you need an SSH private key. This key is stored as a secret variable in GitLab CI/CD settings (SSH_KEY).
+
+**Deployment Job Configuration:**
+
+```yaml
+deploy:
+  stage: deploy
+  before_script:
+    - chmod 400 "$SSH_KEY"
+  script:
+    - |
+      ssh -o StrictHostKeyChecking=no -i "$SSH_KEY" ubuntu@13.229.124.173 "
+      docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" &&
+      CONTAINERS=$(docker ps -aq) &&
+      if [ -n "$CONTAINERS" ]; then
+        docker stop $CONTAINERS &&
+        docker rm $CONTAINERS;
+      fi &&
+      docker run -d -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
+      "
+```
+
+**Steps:**
+
+1. **SSH Login**: Connect to the server using the private key.
+
+2. **Stop and Remove Old Containers**: Ensures a clean slate before deploying the new container.
+
+3. **Run Docker Container**: Deploys the new application version.
+
+## Validate Application Runs Successfully
+
+Once deployed, validate that the application is running by accessing it at `http://<server-ip>:5000`.
+
+## Execute Pipeline
+
+After committing changes, GitLab automatically triggers the pipeline. You can monitor pipeline execution in the CI/**CD > Pipelines** section of your GitLab project.
